@@ -1,0 +1,140 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-1.0.x", "rhel-openssl-3.0.x", "linux-musl-openssl-3.0.x"]
+}
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Match {
+  id               String      @id @default(cuid())
+  title            String      @default("PPL Final 2026")
+  status           String      @default("SETUP")
+  totalOvers       Int         @default(20)
+  ballsPerOver     Int         @default(6)
+  wideBallRuns     Int         @default(1)
+  noBallRuns       Int         @default(1)
+  venue            String?
+  matchDate        DateTime    @default(now())
+  superOverEnabled Boolean     @default(false)
+
+  team1Id        String
+  team2Id        String
+  battingFirstId String?
+  tossWonById    String?
+  tossDecision   String?
+  currentInnings Int         @default(1)
+  winnerId       String?
+  resultText     String?
+  manOfMatchId   String?
+
+  teams     Team[]
+  innings   Innings[]
+  auditLogs AuditLog[]
+  createdAt DateTime    @default(now())
+}
+
+// MatchStatus enum replaced with String for SQLite compatibility
+// SETUP, TOSS, LIVE, INNINGS_BREAK, RAIN_DELAY, COMPLETE, ABANDONED, TIED
+
+model Team {
+  id        String   @id @default(cuid())
+  name      String
+  shortName String
+  matchId   String
+  match     Match    @relation(fields: [matchId], references: [id])
+  players   Player[]
+}
+
+model Player {
+  id          String  @id @default(cuid())
+  name        String
+  displayName String
+  teamId      String
+  jerseyNo    Int?
+  isCaptain   Boolean @default(false)
+  team        Team    @relation(fields: [teamId], references: [id])
+}
+
+model Innings {
+  id            String  @id @default(cuid())
+  matchId       String
+  inningsNo     Int
+  battingTeamId String
+  bowlingTeamId String
+  totalRuns     Int     @default(0)
+  wickets       Int     @default(0)
+  balls         Int     @default(0)
+  extrasWide    Int     @default(0)
+  extrasNoBall  Int     @default(0)
+  extrasBye     Int     @default(0)
+  extrasLegBye  Int     @default(0)
+  isComplete    Boolean @default(false)
+  target        Int?
+
+  match        Match         @relation(fields: [matchId], references: [id])
+  ballEvents   BallEvent[]
+  partnerships Partnership[]
+  overs        Over[]
+}
+
+model BallEvent {
+  id         String  @id @default(cuid())
+  inningsId  String
+  overNo     Int
+  ballNo     Int
+  deliveryNo Int
+  batsmanId  String
+  bowlerId   String
+  runs       Int     @default(0)
+  isWide     Boolean @default(false)
+  isNoBall   Boolean @default(false)
+  isBye      Boolean @default(false)
+  isLegBye   Boolean @default(false)
+  isWicket   Boolean @default(false)
+  wicketType String?
+  fielderId  String?
+  isBoundary Boolean @default(false)
+  isSix      Boolean @default(false)
+  isFreeHit  Boolean @default(false)
+  extraRuns  Int     @default(0)
+
+  innings   Innings  @relation(fields: [inningsId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model Partnership {
+  id        String  @id @default(cuid())
+  inningsId String
+  batter1Id String
+  batter2Id String
+  runs      Int     @default(0)
+  balls     Int     @default(0)
+  isActive  Boolean @default(true)
+  innings   Innings @relation(fields: [inningsId], references: [id])
+}
+
+model Over {
+  id         String  @id @default(cuid())
+  inningsId  String
+  overNo     Int
+  bowlerId   String
+  runs       Int     @default(0)
+  wickets    Int     @default(0)
+  maidens    Int     @default(0)
+  balls      Int     @default(0)
+  isComplete Boolean @default(false)
+  innings    Innings @relation(fields: [inningsId], references: [id])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  matchId   String
+  action    String
+  oldValue  String?
+  newValue  String?
+  reason    String?
+  timestamp DateTime @default(now())
+  match     Match    @relation(fields: [matchId], references: [id])
+}

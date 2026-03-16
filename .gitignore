@@ -1,0 +1,31 @@
+# VS Code
+.vscode/
+
+# Node dependencies
+node_modules/
+
+# Next.js build
+.next/
+out/
+build/
+
+# Environment files
+.env
+.env*.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Misc
+.DS_Store
+*.pem
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Prisma (optional, if you don’t want migrations tracked)
+prisma/dev.db
+prisma/test.db
