@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
       data: {
         matchId: match.id,
         action:  'MATCH_COMPLETE',
-        newValue: { resultText, manOfMatchId },
+        newValue: JSON.stringify({ resultText, manOfMatchId }),
       },
     });
 
